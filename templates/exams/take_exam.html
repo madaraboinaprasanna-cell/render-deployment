@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div id="notes-section" class="glass-panel" style="margin-bottom: 2rem;">
+    <h2>Weekly AI Study Notes</h2>
+    <div
+        style="background: rgba(0,0,0,0.2); padding: 1.5rem; border-radius: 10px; max-height: 400px; overflow-y: auto;">
+        {{ exam.weekly_notes|linebreaks }}
+    </div>
+    <div style="text-align: center; margin-top: 1rem;">
+        <button id="start-test-btn" class="btn-primary">I've Read the Notes, Start Test</button>
+    </div>
+</div>
+
+<div id="test-section" style="display: none;">
+    <div class="glass-panel">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h2>{{ exam.title }}</h2>
+            <div id="timer" style="font-size: 1.5rem; color: var(--secondary-color); font-weight: bold;">Time: 00:00
+            </div>
+        </div>
+        <p>Total Questions: 25 | Total Marks: 50</p>
+    </div>
+
+    <form id="exam-form" style="margin-top: 2rem;">
+        {% csrf_token %}
+        {% for question in questions %}
+        <div class="glass-panel question-container" data-id="{{ question.id }}" style="margin-bottom: 1.5rem;">
+            <p><strong>Q{{ forloop.counter }}:</strong> {{ question.text }}</p>
+            <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                <label class="btn-glow" style="display: block; cursor: pointer; text-align: left;">
+                    <input type="radio" name="question_{{ question.id }}" value="A" required> A) {{ question.option_a }}
+                </label>
+                <label class="btn-glow" style="display: block; cursor: pointer; text-align: left;">
+                    <input type="radio" name="question_{{ question.id }}" value="B"> B) {{ question.option_b }}
+                </label>
+                <label class="btn-glow" style="display: block; cursor: pointer; text-align: left;">
+                    <input type="radio" name="question_{{ question.id }}" value="C"> C) {{ question.option_c }}
+                </label>
+                <label class="btn-glow" style="display: block; cursor: pointer; text-align: left;">
+                    <input type="radio" name="question_{{ question.id }}" value="D"> D) {{ question.option_d }}
+                </label>
+            </div>
+        </div>
+        {% endfor %}
+
+        <div style="text-align: center; margin-top: 2rem; margin-bottom: 5rem;">
+            <button type="submit" class="btn-primary" style="font-size: 1.5rem; padding: 1rem 4rem;">Submit
+                Test</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    const notesSection = document.getElementById('notes-section');
+    const testSection = document.getElementById('test-section');
+    const startBtn = document.getElementById('start-test-btn');
+    const timerDisplay = document.getElementById('timer');
+
+    let totalSeconds = 0;
+    let timerInterval;
+    let questionDurations = {}; // id: seconds
+    let lastActiveId = null;
+    let lastSwitchTime = 0;
+
+    startBtn.addEventListener('click', () => {
+        notesSection.style.display = 'none';
+        testSection.style.display = 'block';
+        startTimer();
+    });
+
+    function startTimer() {
+        lastSwitchTime = Date.now();
+        timerInterval = setInterval(() => {
+            totalSeconds++;
+            const mins = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
+            const secs = (totalSeconds % 60).toString().padStart(2, '0');
+            timerDisplay.innerText = `Time: ${mins}:${secs}`;
+        }, 1000);
+    }
+
+    // Track time per question based on scroll/view
+    document.querySelectorAll('.question-container').forEach(q => {
+        q.addEventListener('click', () => {
+            const id = q.dataset.id;
+            if (lastActiveId && lastActiveId !== id) {
+                const diff = Math.floor((Date.now() - lastSwitchTime) / 1000);
+                questionDurations[lastActiveId] = (questionDurations[lastActiveId] || 0) + diff;
+                lastSwitchTime = Date.now();
+            }
+            lastActiveId = id;
+        });
+    });
+
+    document.getElementById('exam-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        // Final duration update
+        if (lastActiveId) {
+            const diff = Math.floor((Date.now() - lastSwitchTime) / 1000);
+            questionDurations[lastActiveId] = (questionDurations[lastActiveId] || 0) + diff;
+        }
+
+        const formData = new FormData(e.target);
+        const answers = {};
+        formData.forEach((value, key) => {
+            if (key.startsWith('question_')) {
+                const id = key.split('_')[1];
+                answers[id] = {
+                    choice: value,
+                    duration: questionDurations[id] || 0
+                };
+            }
+        });
+
+        const payload = {
+            answers: answers,
+            total_time: totalSeconds
+        };
+
+        const response = await fetch(window.location.href, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+        if (data.redirect) window.location.href = data.redirect;
+    });
+</script>
+
+<style>
+    input[type="radio"] {
+        width: auto;
+        margin-right: 10px;
+    }
+
+    .question-container:focus-within {
+        border-color: var(--secondary-color);
+        box-shadow: var(--accent-glow);
+    }
+</style>
+{% endblock %}

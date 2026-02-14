@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="hero glass-panel">
+    <div class="hero-content" style="text-align: center;">
+        <h1
+            style="font-size: 3rem; background: linear-gradient(to right, var(--primary-color), var(--secondary-color)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+            Future of Collaborative Learning</h1>
+        <p style="font-size: 1.2rem; margin: 1rem 0 2rem;">Connect, Learn, and Grow with AI-Powered Study Groups.</p>
+        {% if user.is_authenticated %}
+        <a href="{% url 'dashboard' %}" class="btn-primary">Go to Dashboard</a>
+        {% else %}
+        <a href="{% url 'signup' %}" class="btn-primary">Get Started</a>
+        {% endif %}
+    </div>
+</section>
+
+<section class="features">
+    <h2 style="text-align: center; margin-bottom: 2rem;">Why AstraLearn?</h2>
+    <div class="card-grid">
+        <div class="card">
+            <h3>AI Study Matching</h3>
+            <p>Smart algorithms connect you with peers who match your learning style and goals.</p>
+        </div>
+        <div class="card">
+            <h3>Virtual Study Rooms</h3>
+            <p>Collaborate in real-time with chat, video, and screen sharing tools.</p>
+        </div>
+        <div class="card">
+            <h3>Personalized Paths</h3>
+            <p>Get custom study plans and resource recommendations tailored to you.</p>
+        </div>
+    </div>
+</section>
+{% endblock %}

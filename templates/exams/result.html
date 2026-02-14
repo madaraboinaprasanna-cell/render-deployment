@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<style>
+    .result-header {
+        text-align: center;
+        margin-bottom: 2rem;
+        padding: 2.5rem;
+    }
+
+    .score-circle {
+        font-size: 3.5rem;
+        font-weight: 800;
+        color: var(--secondary-color);
+        margin: 1rem 0;
+        text-shadow: 0 0 20px rgba(80, 200, 255, 0.3);
+    }
+
+    .analysis-card {
+        margin-bottom: 2rem;
+        border-left: 6px solid #444;
+        transition: transform 0.2s;
+    }
+
+    .analysis-card:hover {
+        transform: translateX(5px);
+    }
+
+    .correct-border {
+        border-left-color: #4caf50 !important;
+    }
+
+    .incorrect-border {
+        border-left-color: #f44336 !important;
+    }
+
+    .answer-box {
+        margin: 1.2rem 0;
+        padding: 1.2rem;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .choice-text {
+        font-weight: 600;
+    }
+
+    .correct-text {
+        color: #4caf50;
+    }
+
+    .incorrect-text {
+        color: #f44336;
+    }
+
+    .ai-insight {
+        margin-top: 1.5rem;
+        padding: 1rem;
+        background: rgba(160, 160, 255, 0.05);
+        border-radius: 10px;
+        border: 1px solid rgba(160, 160, 255, 0.1);
+    }
+
+    .trick-box {
+        margin-top: 1rem;
+        padding: 0.8rem;
+        background: linear-gradient(90deg, rgba(80, 200, 255, 0.1), transparent);
+        border-left: 3px solid var(--secondary-color);
+        font-style: italic;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="glass-panel result-header">
+    <h2 style="opacity: 0.7;">Weekly Performance Assessment</h2>
+    <div class="score-circle">{{ result.score }} / {{ result.total_marks }}</div>
+    <div style="display: flex; justify-content: center; gap: 2rem; opacity: 0.8;">
+        <span>⏱️ Time Taken: {{ result.time_taken|default:0 }}s</span>
+        <span>📅 Completed: {{ result.completed_at|date:"M d, Y" }}</span>
+    </div>
+</div>
+
+<h3 style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+    <span>🔍</span> Detailed Question Breakdown
+</h3>
+
+<div style="display: flex; flex-direction: column; gap: 1rem;">
+    {% for item in result.breakdown %}
+    <div class="glass-panel analysis-card {% if item.is_correct %}correct-border{% else %}incorrect-border{% endif %}">
+        <div style="display: flex; justify-content: space-between; align-items: start; gap: 1rem;">
+            <p style="font-size: 1.1rem; flex: 1;"><strong>Q{{ forloop.counter }}:</strong> {{ item.text }}</p>
+            <span class="status-badge" style="background: rgba(255,255,255,0.05);">{{ item.duration }}s</span>
+        </div>
+
+        <div class="answer-box">
+            <div style="margin-bottom: 0.5rem;">
+                Your Selection:
+                <span class="choice-text {% if item.is_correct %}correct-text{% else %}incorrect-text{% endif %}">
+                    {{ item.user_choice }})
+                    {% if item.user_choice == 'A' %}{{ item.options.A }}
+                    {% elif item.user_choice == 'B' %}{{ item.options.B }}
+                    {% elif item.user_choice == 'C' %}{{ item.options.C }}
+                    {% elif item.user_choice == 'D' %}{{ item.options.D }}
+                    {% else %}Skipped{% endif %}
+                </span>
+            </div>
+            {% if not item.is_correct %}
+            <div>
+                Correct Answer:
+                <span class="choice-text correct-text">
+                    {{ item.correct_choice }})
+                    {% if item.correct_choice == 'A' %}{{ item.options.A }}
+                    {% elif item.correct_choice == 'B' %}{{ item.options.B }}
+                    {% elif item.correct_choice == 'C' %}{{ item.options.C }}
+                    {% elif item.correct_choice == 'D' %}{{ item.options.D }}{% endif %}
+                </span>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="ai-insight">
+            <h4 style="color: var(--primary-color); margin-bottom: 0.5rem;">🎓 AI Teacher Explanation:</h4>
+            <p style="font-size: 0.95rem; line-height: 1.6; color: #ccc;">{{ item.explanation }}</p>
+        </div>
+
+        {% if item.trick %}
+        <div class="trick-box">
+            <h4 style="color: var(--secondary-color); font-size: 0.9rem; margin-bottom: 0.3rem;">🚀 Quick Tip:</h4>
+            <p style="font-size: 0.9rem;">{{ item.trick }}</p>
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+
+<div style="text-align: center; margin: 4rem 0; display: flex; justify-content: center; gap: 1.5rem;">
+    <a href="{% url 'exam_list' %}" class="btn-primary" style="padding: 1rem 2rem;">All Assessments</a>
+    <a href="{% url 'dashboard' %}" class="btn-glow" style="padding: 1rem 2rem;">Back to Dashboard</a>
+</div>
+{% endblock %}

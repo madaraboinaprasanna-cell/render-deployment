@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="glass-panel">
+    <h1>{{ note.title }}</h1>
+    <p><strong>Subject:</strong> {{ note.subject }}</p>
+    <p>Authored by {{ note.author.username }} | {{ note.created_at }}</p>
+    <hr style="border: var(--glass-border); margin: 1.5rem 0;">
+
+    <div style="white-space: pre-wrap; margin-bottom: 2rem;">
+        {{ note.content }}
+    </div>
+
+    {% if note.file %}
+    <div class="glass-panel" style="background: rgba(255,255,255,0.05);">
+        <h3>Attached File</h3>
+        <p><a href="{{ note.file.url }}" target="_blank" style="color: var(--secondary-color);">Download Notes File</a>
+        </p>
+    </div>
+    {% endif %}
+
+    <a href="{% url 'note_list' %}" class="btn-glow" style="margin-top: 2rem; display: inline-block;">Back to All
+        Notes</a>
+</div>
+{% endblock %}

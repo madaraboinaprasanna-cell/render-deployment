@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="glass-panel">
+    <h2>{{ path.title }}</h2>
+    <p>{{ path.description }}</p>
+
+    <div style="background: rgba(255,255,255,0.1); height: 10px; border-radius: 5px; margin: 1rem 0; overflow: hidden;">
+        <div id="progress-bar"
+            style="width: {{ progress }}%; background: var(--secondary-color); height: 100%; transition: width 0.5s ease;">
+        </div>
+    </div>
+    <p>Progress: <span id="progress-text">{{ progress }}</span>%</p>
+</div>
+
+<h3>Resources</h3>
+<div class="glass-panel">
+    <div style="display: flex; flex-direction: column; gap: 1rem;">
+        {% for resource in resources %}
+        <div
+            style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 10px;">
+            <div>
+                <h4> <a href="{{ resource.url }}" target="_blank" style="color: white; text-decoration: underline;">{{
+                        resource.title }}</a> </h4>
+                <span style="font-size: 0.8rem; color: #aaa;">{{ resource.resource_type }}</span>
+            </div>
+            <button class="btn-glow {% if resource.pk in completed_ids %}completed{% endif %}"
+                style="{% if resource.pk in completed_ids %}background: var(--primary-color); color: black;{% endif %}"
+                onclick="markComplete(this, {{ resource.pk }})">
+                {% if resource.pk in completed_ids %}Completed{% else %}Mark Complete{% endif %}
+            </button>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    function markComplete(btn, resourceId) {
+        if (btn.classList.contains('completed')) return;
+
+        const url = "{% url 'complete_resource' 0 %}".replace('0', resourceId);
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        }).then(res => {
+            if (res.ok) {
+                btn.classList.add('completed');
+                btn.style.background = 'var(--primary-color)';
+                btn.style.color = 'black';
+                btn.innerText = 'Completed';
+
+                // Update progress bar (visual update only, accurate on refresh)
+                location.reload();
+            }
+        });
+    }
+</script>
+{% endblock %}

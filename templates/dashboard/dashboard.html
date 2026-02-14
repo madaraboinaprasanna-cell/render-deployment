@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="display: flex; gap: 2rem; align-items: start;">
+    <!-- Profile Section -->
+    <div class="glass-panel" style="width: 250px; text-align: center;">
+        {% if user.avatar %}
+        <img src="{{ user.avatar.url }}" alt="Avatar"
+            style="width: 100px; height: 100px; border-radius: 50%; border: 2px solid var(--primary-color);">
+        {% else %}
+        <div
+            style="width: 100px; height: 100px; border-radius: 50%; border: 2px solid var(--primary-color); background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; margin: auto; font-size: 2rem;">
+            {{ user.username|first|upper }}
+        </div>
+        {% endif %}
+        <h3>{{ user.username }}</h3>
+        <p>{{ user.bio }}</p>
+        <div style="margin-top: 1rem; text-align: left;">
+            <p><strong>Learning Style:</strong> {{ user.learning_style }}</p>
+            <p><strong>Interests:</strong> {{ user.interests }}</p>
+        </div>
+        <a href="#" class="btn-glow" style="margin-top: 1rem; display: block;">Edit Profile</a>
+    </div>
+
+    <!-- Main Dashboard -->
+    <div style="flex: 1;">
+        <h2>Your Progress</h2>
+        <div class="glass-panel" style="display: flex; justify-content: space-around; text-align: center;">
+            <div>
+                <h3>{{ groups.count }}</h3>
+                <p>Study Groups</p>
+            </div>
+            <div>
+                <h3><a href="{% url 'doubt_ai_chat' %}" style="color: white; text-decoration: none;">ASK</a></h3>
+                <p>Verify Doubts</p>
+            </div>
+        </div>
+
+        <h3>Your Groups</h3>
+        <div class="card-grid">
+            {% for group in groups %}
+            <div class="card">
+                <h4>{{ group.name }}</h4>
+                <a href="{% url 'group_detail' group.pk %}" class="btn-glow">View Group</a>
+                <a href="{% url 'collaborate_room' group.pk %}" class="btn-glow">Enter Room</a>
+            </div>
+            {% empty %}
+            <p>You are not in any groups. <a href="{% url 'group_list' %}">Join one!</a></p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

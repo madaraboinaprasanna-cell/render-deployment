@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="glass-panel"
+    style="max-width: 800px; margin: 2rem auto; height: 80vh; display: flex; flex-direction: column;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h2 style="margin: 0;">Ask Doubt AI</h2>
+        <a href="{% url 'clear_doubt_history' %}" class="btn-glow"
+            style="font-size: 0.8rem; padding: 0.3rem 0.6rem; text-decoration: none;">Clear History</a>
+    </div>
+    <div id="ai-chat-box"
+        style="flex: 1; overflow-y: auto; padding: 1rem; background: rgba(0,0,0,0.2); border-radius: 10px; margin-bottom: 1rem;">
+        <div class="message ai"
+            style="margin-bottom: 1rem; padding: 0.8rem; border-radius: 10px; background: rgba(160, 160, 255, 0.1); border: 1px solid var(--primary-color); max-width: 80%; margin-right: auto;">
+            <strong>Astra AI:</strong> Hello, {{ user.username }}! I'm your AI study assistant. Ask me any doubt about
+            your subjects.
+        </div>
+
+        {% for chat in history %}
+        <div class="message user"
+            style="margin-bottom: 1rem; padding: 0.8rem; border-radius: 10px; background: rgba(80, 200, 255, 0.1); border: 1px solid var(--secondary-color); max-width: 80%; margin-left: auto;">
+            <strong>You:</strong> {{ chat.message }}
+        </div>
+        <div class="message ai"
+            style="margin-bottom: 1rem; padding: 0.8rem; border-radius: 10px; background: rgba(160, 160, 255, 0.1); border: 1px solid var(--primary-color); max-width: 80%; margin-right: auto;">
+            <strong>Astra AI:</strong> {{ chat.response|linebreaksbr }}
+        </div>
+        {% endfor %}
+    </div>
+
+    <div style="display: flex; gap: 0.5rem;">
+        <input type="text" id="ai-input" placeholder="Type your doubt here..." style="flex: 1; margin-bottom: 0;">
+        <button id="ai-send-btn" class="btn-primary">Ask</button>
+    </div>
+</div>
+
+<script>
+    const chatBox = document.getElementById('ai-chat-box');
+    const inputField = document.getElementById('ai-input');
+    const sendBtn = document.getElementById('ai-send-btn');
+    const csrfToken = '{{ csrf_token }}';
+
+    // Auto-scroll to bottom
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    function addMessage(sender, text, isUser) {
+        const div = document.createElement('div');
+        div.style.marginBottom = '1rem';
+        div.style.padding = '0.8rem';
+        div.style.borderRadius = '10px';
+        div.style.maxWidth = '80%';
+
+        if (isUser) {
+            div.style.background = 'rgba(80, 200, 255, 0.1)';
+            div.style.marginLeft = 'auto';
+            div.style.border = '1px solid var(--secondary-color)';
+            div.innerHTML = `<strong>You:</strong> ${text}`;
+        } else {
+            div.style.background = 'rgba(160, 160, 255, 0.1)';
+            div.style.marginRight = 'auto';
+            div.style.border = '1px solid var(--primary-color)';
+            div.innerHTML = `<strong>Astra AI:</strong> ${text}`;
+        }
+
+        chatBox.appendChild(div);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    sendBtn.addEventListener('click', async () => {
+        const message = inputField.value.trim();
+        if (!message) return;
+
+        addMessage('You', message, true);
+        inputField.value = '';
+        inputField.disabled = true;
+        sendBtn.disabled = true;
+
+        try {
+            const response = await fetch("{% url 'ask_ai' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({ message: message })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                let aiResponse = data.message || "I couldn't understand that.";
+                aiResponse = aiResponse.replace(/\n/g, '<br>');
+                addMessage('Astra AI', aiResponse, false);
+            } else {
+                addMessage('System', 'Error: ' + (data.error || 'Failed to reach AI'), false);
+            }
+        } catch (err) {
+            addMessage('System', 'Network Error: ' + err.message, false);
+        } finally {
+            inputField.disabled = false;
+            sendBtn.disabled = false;
+            inputField.focus();
+        }
+    });
+
+    inputField.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendBtn.click();
+    });
+</script>
+{% endblock %}

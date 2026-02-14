@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <h2>Your Test History</h2>
+</div>
+
+<div class="glass-panel">
+    <h3>Completed Assessments</h3>
+    <p>Track your scores and performance over time.</p>
+
+    <div class="card-grid" style="margin-top: 2rem;">
+        {% for result in results %}
+        <div class="card">
+            <h4>{{ result.exam.title }}</h4>
+            <p><strong>Score:</strong> {{ result.score }} / {{ result.total_marks }}</p>
+            <p><strong>Time Taken:</strong> {{ result.time_taken }} seconds</p>
+            <p><strong>Completed:</strong> {{ result.completed_at|date:"M d, Y H:i" }}</p>
+            <div style="margin-top: 1rem;">
+                <a href="{% url 'exam_result' result.exam.id %}" class="btn-glow">Review Analysis</a>
+            </div>
+        </div>
+        {% empty %}
+        <p>You haven't completed any tests yet. Head over to <a href="{% url 'exam_list' %}">Weekly Tests</a> to get
+            started!</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Learning Paths</h2>
+<div class="glass-panel">
+    <div class="card-grid">
+        {% for path in paths %}
+        <div class="card">
+            <h3>{{ path.title }}</h3>
+            <p>{{ path.description|truncatechars:100 }}</p>
+            <div style="margin-top: 1rem; display: flex; justify-content: space-between;">
+                <span
+                    style="background: rgba(80, 200, 255, 0.2); padding: 0.2rem 0.6rem; border-radius: 10px; font-size: 0.8rem;">{{
+                    path.difficulty }}</span>
+                <a href="{% url 'path_detail' path.pk %}" class="btn-glow">Start Learning</a>
+            </div>
+        </div>
+        {% empty %}
+        <p>No learning paths available yet.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

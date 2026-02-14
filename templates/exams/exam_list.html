@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <h2>Weekly Tests</h2>
+    <a href="{% url 'test_history' %}" class="btn-glow">View My History</a>
+</div>
+
+<div class="glass-panel">
+    <h3>Your Assessment Center</h3>
+    <p>AI-generated tests based on your group subjects.</p>
+
+    <div class="card-grid" style="margin-top: 2rem;">
+        {% for exam in exams %}
+        <div class="card">
+            <h4>{{ exam.title }}</h4>
+            <p>Group: {{ exam.group.name }}</p>
+            <p>Released: {{ exam.created_at|date:"M d, Y" }}</p>
+            <div style="margin-top: 1rem;">
+                <a href="{% url 'take_exam' exam.id %}" class="btn-primary">Take Test</a>
+            </div>
+        </div>
+        {% empty %}
+        <p>No tests generated yet. You can generate one from your group detail page!</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

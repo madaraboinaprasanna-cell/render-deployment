@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>My Collaborative Spaces</h2>
+<div class="glass-panel">
+    <form method="GET" action="{% url 'collaborate_home' %}" style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+        <input type="text" name="q" placeholder="Search by group name or subject..." value="{{ query|default:'' }}"
+            style="flex: 1; margin-bottom: 0;">
+        <button type="submit" class="btn-primary">Search</button>
+        {% if query %}
+        <a href="{% url 'collaborate_home' %}" class="btn-glow"
+            style="text-decoration: none; display: flex; align-items: center;">Clear</a>
+        {% endif %}
+    </form>
+
+    <div class="card-grid">
+        {% for room in rooms %}
+        <div class="card">
+            <h3>{{ room.name }}</h3>
+            <p>Group: {{ room.group.name }}</p>
+            {% if room.video_active %}
+            <span
+                style="background: var(--accent-color); color: white; padding: 0.2rem 0.5rem; border-radius: 5px; font-size: 0.8rem; display: inline-block; margin-bottom: 0.5rem;">●
+                LIVE VIDEO</span>
+            {% endif %}
+            <a href="{% url 'collaborate_room' room.group.id %}" class="btn-primary">Enter Room</a>
+        </div>
+        {% empty %}
+        <p>You haven't joined any groups yet. <a href="{% url 'group_list' %}">Join a group</a> to collaborate!</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Find Your Study Squad</h2>
+<div class="glass-panel">
+    <h3>Recommended for You</h3>
+    <div class="card-grid">
+        {% for group in recommended_groups %}
+        <div class="card">
+            <h4>{{ group.name }}</h4>
+            <p>{{ group.description|truncatechars:100 }}</p>
+            <a href="{% url 'group_detail' group.pk %}" class="btn-glow">View Group</a>
+        </div>
+        {% empty %}
+        <p>No specific recommendations yet. Update your interests in profile!</p>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="glass-panel">
+    <form method="GET" action="{% url 'group_list' %}" style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+        <input type="text" name="q" placeholder="Search by group name, subject, or description..."
+            value="{{ query|default:'' }}" style="flex: 1; margin-bottom: 0;">
+        <button type="submit" class="btn-primary">Search</button>
+        {% if query %}
+        <a href="{% url 'group_list' %}" class="btn-glow"
+            style="text-decoration: none; display: flex; align-items: center;">Clear</a>
+        {% endif %}
+    </form>
+
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h3>All Groups</h3>
+        <a href="{% url 'create_group' %}" class="btn-primary">Create New Group</a>
+    </div>
+    <div class="card-grid">
+        {% for group in groups %}
+        <div class="card">
+            <h4>{{ group.name }}</h4>
+            <p>Subject: {{ group.subject }}</p>
+            <p>Members: {{ group.members.count }}</p>
+            <a href="{% url 'group_detail' group.pk %}" class="btn-glow">View</a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

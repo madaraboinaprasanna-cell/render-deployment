@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <h2>Prepared Notes</h2>
+    <a href="{% url 'create_note' %}" class="btn-primary">Post New Notes</a>
+</div>
+
+<div class="glass-panel" style="margin-bottom: 2rem;">
+    <form method="GET" action="{% url 'note_list' %}" style="display: flex; gap: 0.5rem;">
+        <input type="text" name="q" placeholder="Search by title, subject, or content..." value="{{ query|default:'' }}"
+            style="flex: 1; margin-bottom: 0;">
+        <button type="submit" class="btn-primary">Search</button>
+        {% if query %}
+        <a href="{% url 'note_list' %}" class="btn-glow"
+            style="text-decoration: none; display: flex; align-items: center;">Clear</a>
+        {% endif %}
+    </form>
+</div>
+
+<div class="card-grid">
+    {% for note in notes %}
+    <div class="card">
+        <h3>{{ note.title }}</h3>
+        <p><strong>Subject:</strong> {{ note.subject }}</p>
+        <p>By {{ note.author.username }} on {{ note.created_at|date:"M d, Y" }}</p>
+        <div style="margin-top: 1rem;">
+            <a href="{% url 'note_detail' note.pk %}" class="btn-glow">Read Full Notes</a>
+        </div>
+    </div>
+    {% empty %}
+    <p>No notes shared yet. Be the first to post!</p>
+    {% endfor %}
+</div>
+{% endblock %}
